@@ -8,3 +8,4 @@ pillow
 requests
 beautifulsoup4
 gunicorn
+python-dotenv
