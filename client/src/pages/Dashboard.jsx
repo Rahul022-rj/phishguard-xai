@@ -6,6 +6,7 @@ import RedFlagCard from '../components/RedFlagCard';
 import HighlightedText from '../components/HighlightedText';
 import SafetyTips from '../components/SafetyTips';
 import ChatDrawer from '../components/ChatDrawer';
+import UrlTelemetryCard from '../components/UrlTelemetryCard';
 import { analyzeOfferLetter } from '../services/api';
 import { MessageSquare, RefreshCw, Building2, Mail, DollarSign, Calendar, AlertCircle } from 'lucide-react';
 
@@ -62,6 +63,11 @@ export default function Dashboard() {
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
                 <span>Scan Assessment Result</span>
                 <span className="text-xs font-mono font-normal text-slate-400">ID: #{scanResult.scan_id}</span>
+                {scanResult.input_type === 'url' && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-[#00F0FF] border border-cyan-500/30 uppercase">
+                    URL Phishing Inspection
+                  </span>
+                )}
               </h2>
               <p className="text-xs text-slate-400">Analysis powered by Google Gemini XAI and PhishGuard Threat Engine.</p>
             </div>
@@ -114,6 +120,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* URL Specific Security Telemetry Panel */}
+          {scanResult.url_analysis && (
+            <UrlTelemetryCard urlAnalysis={scanResult.url_analysis} />
+          )}
 
           {/* Visual Threat Indicators */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

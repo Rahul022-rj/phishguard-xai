@@ -5,29 +5,29 @@ from google.genai import types
 
 def analyze_with_gemini(raw_text: str) -> dict:
     """
-    Sends offer letter text to Google Gemini 1.5 Flash using structured JSON enforcement.
+    Sends offer letter text or URL scrape context to Google Gemini 1.5 Flash using structured JSON enforcement.
     """
     api_key = os.getenv("GEMINI_API_KEY", "")
     
     if not api_key:
-        print("[Gemini Service Warning]: GEMINI_API_KEY is not set. Returning fallback mock structure.")
+        print("[Gemini Service Warning]: GEMINI_API_KEY is not set. Using rule engine fallback.")
         return None
 
     try:
         client = genai.Client(api_key=api_key)
 
         system_instruction = """
-You are PhishGuard XAI, an expert cybersecurity AI inspector specializing in identifying fake job offer letters, employment scams, and phishing attempts.
+You are PhishGuard XAI, an expert cybersecurity AI inspector specializing in identifying fake job offer letters, employment scams, and phishing recruitment websites.
 
-Analyze the user's provided text and return ONLY a valid JSON object without any backticks, markdown code blocks, or explanatory text.
+Analyze the user's provided input (text or scraped URL details) and return ONLY a valid JSON object without any backticks, markdown code blocks, or explanatory text.
 
 The JSON output MUST STRICTLY follow this key structure:
 {
-  "company": "Extracted company name or Unknown",
+  "company": "Extracted company/brand name or Unknown",
   "hr_email": "Extracted recruiter email or Not Specified",
   "salary": "Extracted compensation details or Unstated",
   "joining_date": "Extracted start date or N/A",
-  "risk_score": Integer (0 to 100 representing scam probability),
+  "risk_score": Integer (0 to 100 representing overall threat score),
   "risk_level": String ("Low", "Medium", "High", or "Critical"),
   "confidence": Integer (0 to 100),
   "breakdown": {
@@ -39,22 +39,22 @@ The JSON output MUST STRICTLY follow this key structure:
   },
   "red_flags": [
     {
-      "title": "Short title of anomaly",
-      "description": "Clear explanation of why this feature indicates a scam"
+      "title": "Short title of anomaly or domain threat",
+      "description": "Clear explanation of why this feature indicates a scam or phishing URL"
     }
   ],
   "highlighted_sentences": [
-    "Exact verbatim substring from the raw text that represents a scam red flag"
+    "Exact verbatim substring or domain marker from raw text that represents a red flag"
   ],
   "safety_tips": [
-    "Actionable advice for the job seeker"
+    "Actionable security advice for the user"
   ]
 }
 """
 
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=f"Analyze this job offer letter / recruitment message:\n\n{raw_text}",
+            contents=f"Analyze this job offer letter or recruitment URL data:\n\n{raw_text}",
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=0.1,
@@ -62,10 +62,8 @@ The JSON output MUST STRICTLY follow this key structure:
             ),
         )
 
-        # Parse JSON output
         response_text = response.text.strip()
         
-        # Clean any potential leftover markdown code block delimiters if present
         if response_text.startswith("```json"):
             response_text = response_text[7:]
         if response_text.startswith("```"):
@@ -73,8 +71,7 @@ The JSON output MUST STRICTLY follow this key structure:
         if response_text.endswith("```"):
             response_text = response_text[:-3]
 
-        parsed_json = json.loads(response_text.strip())
-        return parsed_json
+        return json.loads(response_text.strip())
 
     except Exception as e:
         print(f"[Gemini Service Error]: {str(e)}")
