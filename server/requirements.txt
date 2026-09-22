@@ -1,0 +1,10 @@
+flask
+flask-cors
+flask-sqlalchemy
+google-genai
+pypdf
+pytesseract
+pillow
+requests
+beautifulsoup4
+gunicorn
