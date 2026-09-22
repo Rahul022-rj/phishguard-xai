@@ -1,0 +1,19 @@
+# Python
+server/__pycache__/
+server/venv/
+server/instance/
+*.pyc
+*.db
+
+# Node
+client/node_modules/
+client/dist/
+
+# Environment Variables
+.env
+*.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
